@@ -1,0 +1,5 @@
+*.chat.egg-info
+*.pyc
+*.pyo
+
+

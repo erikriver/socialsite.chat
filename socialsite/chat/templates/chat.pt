@@ -1,0 +1,105 @@
+socialsite.chat<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" xmlns:tal="http://xml.zope.org/namespaces/tal">
+<head>
+  <title>Chat</title>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
+  <meta name="keywords" content="python web chat application" />
+  <meta name="description" content="pyramid web chat application" />
+  <link rel="shortcut icon" href="${request.static_url('socialsite.chat:static/favicon.ico')}" />
+  <link rel="stylesheet" href="${request.static_url('socialsite.chat:static/pylons.css')}" type="text/css" media="screen" charset="utf-8" />
+  <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Neuton|Nobile:regular,i,b,bi&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+  <!--[if lte IE 6]>
+  <link rel="stylesheet" href="${request.static_url('socialsite.chat:static/ie6.css')}" type="text/css" media="screen" charset="utf-8" />
+  <![endif]-->
+  
+  <script src="${hookbox_server}/static/hookbox.js"></script>
+  <script>
+  	function doChat() {
+  		var el = document.getElementById('message');
+  		conn.publish('testing', el.value);
+  		el.value = '';
+  		el.focus();
+  	};
+
+  	function addHistory(txt) {
+  		var h = document.getElementById('history');
+  		h.appendChild(document.createElement('div')).innerHTML = txt;
+
+  		var shouldScroll = (h.scrollTop + h.offsetHeight) == h.scrollHeight;
+  		if (shouldScroll) { h.scrollTop = h.scrollHeight; }
+  	}
+
+  	onload = function() {
+  		hookbox.logging.get('hookbox').setLevel(hookbox.logging.DEBUG);
+  		hookbox.logging.get('net.protocols.rtjp').setLevel(hookbox.logging.DEBUG);
+  		conn = hookbox.connect('${hookbox_server}');
+  		conn.onSubscribed = function(channel_name, subscription) {
+  			SUB = subscription;
+
+  			subscription.onPublish = function(frame) {
+  				addHistory(frame.user + ': ' + frame.payload);
+  			};
+
+  			subscription.onSubscribe = function(frame) {
+  				addHistory('* ' + frame.user + ' joined');
+  			}
+
+  			subscription.onUnsubscribe = function(frame) {
+  				addHistory('* ' + frame.user + ' left');
+  			}
+
+  			subscription.onFailure = function(msg) {
+  					alert('Error: ' + msg);
+  			}
+
+  			subscription.onState = function(frame) {
+  				addHistory("* Channel State Changed...");
+  			}
+
+  			for (var i = 0, item; item = subscription.history[i]; ++i) {
+  				var name = item[0];
+  				var frame = item[1];
+  				if (name == 'SUBSCRIBE') { subscription.onSubscribe(frame); }
+  				if (name == 'UNSUBSCRIBE') { subscription.onUnsubscribe(frame); }
+  				if (name == 'PUBLISH') { subscription.onPublish(frame); }
+  			}
+
+  			addHistory('* ' + conn.username + ' enters ' + channel_name);
+  		}
+
+  		conn.onUnsubscribed = function(sub, args) {
+  			addHistory("** You have been unsubscribed from the channel");
+  		}
+
+  		conn.onError = function(frame) { alert("Error: " + frame.msg); }
+
+  		conn.subscribe('testing');
+  	}
+  </script>
+
+</head>
+<body>
+  <div id="wrap">
+    <div id="middle">
+      <div class="middle align-center">
+        <p class="app-welcome">
+          Welcome <span class="app-name">${username}</span>
+        </p>
+      </div>
+    </div>
+    <div id="bottom">
+      <div class="bottom">
+        <div class="box" id="history"></div>
+        <form onsubmit="doChat(); return false;">
+        <input type="text" id="message" name="message" value="" />
+        <input type="submit" id="send" value="Send" />
+        </form>
+      </div>
+    </div>
+  </div>
+    
+  <div id="footer">
+    <div class="footer">&copy; Copyleft 2011, Erik Rivera.</div>
+  </div>
+</body>
+</html>
