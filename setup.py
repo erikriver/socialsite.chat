@@ -6,7 +6,7 @@ here = os.path.abspath(os.path.dirname(__file__))
 README = open(os.path.join(here, 'README.txt')).read()
 CHANGES = open(os.path.join(here, 'CHANGES.txt')).read()
 
-requires = ['pyramid', 'WebError', 'transaction']
+requires = ['pyramid', 'WebError', 'transaction', 'zope.sqlalchemy']
 
 setup(name='socialsite.chat',
       version='0.0',
