@@ -27,10 +27,10 @@ setup(name='socialsite.chat',
       zip_safe=False,
       install_requires=requires,
       tests_require=requires,
-      test_suite="socialsitechat",
+      test_suite="socialsite.chat",
       entry_points = """\
       [paste.app_factory]
-      main = socialsitechat:main
+      main = socialsite.chat:main
       """,
       paster_plugins=['pyramid'],
       )
