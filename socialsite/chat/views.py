@@ -1,5 +1,5 @@
-from pyramid_chat.models import DBSession
-from pyramid_chat.models import Channels
+from socialsite.chat.models import DBSession
+from socialsite.chat.models import Channels
 
 def home(request):
     return {'project':'pyramid_chat'}
